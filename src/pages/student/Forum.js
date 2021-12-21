@@ -1,0 +1,332 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { getForum, replyForum } from "../../actions/concern";
+import Sidebar from "../../components/Sidebar/Sidebar";
+import moment from "moment";
+import { makeStyles } from "@material-ui/core/styles";
+import {
+  CircularProgress,
+  Box,
+  CssBaseline,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+} from "@material-ui/core";
+
+import AttachFileIcon from "@material-ui/icons/AttachFile";
+import SendIcon from "@material-ui/icons/Send";
+import FSend from "../../components/Forum/FSend";
+import FReceive from "../../components/Forum/FReceive";
+
+const useStyles = makeStyles({
+  root: {
+    padding: "20px",
+  },
+  textfield: {
+    background: "white",
+    borderRadius: "4px",
+  },
+  input: {
+    display: "none",
+  },
+  details: {
+    textAlign: "left",
+    margin: "15",
+  },
+  shadow: {
+    boxShadow: "rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em",
+  },
+});
+
+const Forum = () => {
+  const classes = useStyles();
+
+  const { id } = useParams();
+
+  const dispatch = useDispatch();
+
+  const { email } = useSelector((state) => state.user);
+
+  const [text, setText] = useState("");
+
+  const [attachment, setAttachment] = useState("");
+
+  const { concerns, isLoading } = useSelector((state) => state.concern);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const reply = { email, text, attachment, selectedName };
+
+    dispatch(replyForum(id, reply));
+    setText("");
+    setAttachment("");
+    setSelectedFile([]);
+    setSelectedName("");
+  };
+
+  const [selectedFile, setSelectedFile] = useState([]);
+
+  const [selectedName, setSelectedName] = useState("");
+
+  const onFileChange = (e) => {
+    setSelectedFile(e.target.files);
+
+    setSelectedName(e.target.files[0].name);
+  };
+
+  const encodeFileBase64 = (file) => {
+    var reader = new FileReader();
+    if (file) {
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        var Base64 = reader.result;
+
+        setAttachment(Base64);
+      };
+      reader.onerror = (error) => {
+        console.log("Err", error);
+      };
+    }
+  };
+
+  encodeFileBase64(selectedFile[0]);
+
+  useEffect(() => {
+    dispatch(getForum(id));
+  }, [id, dispatch]);
+
+  return (
+    <>
+      <Sidebar name="Forum" />
+      <CssBaseline />
+      <Box>
+        <Grid container>
+          <Grid item xs={12} sm={8} md={9} container>
+            <Grid
+              item
+              xs={12}
+              className={classes.root}
+              style={{
+                minHeight: "79vh",
+                maxHeight: "79vh",
+                overflow: "auto",
+              }}
+            >
+              {isLoading ? (
+                <CircularProgress />
+              ) : (
+                <>
+                  {concerns.map((concern, idx) => (
+                    <div
+                      key={idx}
+                      style={{ display: "flex", flexDirection: "column" }}
+                    >
+                      {concern.forum.map((forum, idx) => {
+                        if (forum.email === email) {
+                          return (
+                            <FSend
+                              key={idx}
+                              sender={forum.email}
+                              message={forum.text}
+                              date={moment(forum.time).fromNow()}
+                              image={forum.attachment}
+                              fileName={forum.filename}
+                            />
+                          );
+                        } else if (forum.email.includes("facilitator")) {
+                          return (
+                            <FReceive
+                              key={idx}
+                              sender={forum.email}
+                              message={forum.text}
+                              date={moment(forum.time).fromNow()}
+                              image={forum.attachment}
+                              fileName={forum.filename}
+                              testStyle={{
+                                display: "flex",
+                                flexDirection: "column",
+                                backgroundColor: "#D8D9F6",
+                                marginBottom: "10px",
+                                maxWidth: "60%",
+                                alignContent: "left",
+                              }}
+                            />
+                          );
+                        } else if (forum.email.includes("swdc")) {
+                          return (
+                            <FReceive
+                              key={idx}
+                              sender={forum.email}
+                              message={forum.text}
+                              date={moment(forum.time).fromNow()}
+                              image={forum.attachment}
+                              fileName={forum.filename}
+                              testStyle={{
+                                display: "flex",
+                                flexDirection: "column",
+                                backgroundColor: "#FECFF4",
+                                marginBottom: "10px",
+                                maxWidth: "60%",
+                                alignContent: "left",
+                              }}
+                            />
+                          );
+                        } else if (forum.email.includes("guidance")) {
+                          return (
+                            <FReceive
+                              key={idx}
+                              sender={forum.email}
+                              message={forum.text}
+                              date={moment(forum.time).fromNow()}
+                              image={forum.attachment}
+                              fileName={forum.filename}
+                              testStyle={{
+                                display: "flex",
+                                flexDirection: "column",
+                                backgroundColor: "#F6F5D8",
+                                marginBottom: "10px",
+                                maxWidth: "60%",
+                                alignContent: "left",
+                              }}
+                            />
+                          );
+                        } else if (forum.email.includes("nimda")) {
+                          return (
+                            <FReceive
+                              key={idx}
+                              sender={forum.email}
+                              message={forum.text}
+                              date={moment(forum.time).fromNow()}
+                              image={forum.attachment}
+                              fileName={forum.filename}
+                              testStyle={{
+                                display: "flex",
+                                flexDirection: "column",
+                                backgroundColor: "#FEC00F",
+                                marginBottom: "10px",
+                                maxWidth: "60%",
+                                alignContent: "left",
+                              }}
+                            />
+                          );
+                        }
+                      })}
+                    </div>
+                  ))}
+                </>
+              )}
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              container
+              justifyContent="center"
+              alignItems="center"
+              style={{
+                backgroundColor: "white",
+                minHeight: "8vh",
+                alignContent: "center",
+              }}
+              className={classes.shadow}
+            >
+              <Grid item xs={2} sm={1} md={1} style={{ textAlign: "center" }}>
+                <input
+                  className={classes.input}
+                  id="image-upload"
+                  type="file"
+                  onChange={onFileChange}
+                />
+                <label htmlFor="image-upload">
+                  <IconButton size="medium" component="span">
+                    <AttachFileIcon fontSize="medium" />
+                  </IconButton>
+                </label>
+              </Grid>
+              
+              <Grid item xs={8} sm={9} md={10}>
+                <TextField
+                  className={classes.textfield}
+                  id="chat-input"
+                  placeholder="Aa"
+                  multiline
+                  fullWidth
+                  margin="dense"
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                  maxRows={3}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={2} sm={1} md={1} style={{ textAlign: "center" }}>
+                <IconButton
+                  size="medium"
+                  color="primary"
+                  onClick={handleSubmit}
+                >
+                  <SendIcon fontSize="medium" />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            sm={4}
+            md={3}
+            container
+            margin="normal"
+            style={{ backgroundColor: "#D8D9F6" }}
+          >
+            <Grid item xs={12} style={{ textAlign: "left", margin: "10px" }}>
+              {isLoading ? (
+                <CircularProgress />
+              ) : (
+                <>
+                  {concerns.map((concern) => (
+                    <>
+                      <Typography variant="h6" style={{ textAlign: "center" }}>
+                        Details:
+                      </Typography>
+                      <hr />
+                      <Typography variant="body1" gutterBottom>
+                        Category: {concern.category}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom>
+                        Date Filed: {moment(concern.dateCreated).format("LL")}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom maxRows={6}>
+                        Description: {concern.subject}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom>
+                        Status: {concern.status}
+                      </Typography>
+                      {concern.receiver.map((val, idx) => (
+                        <Typography
+                          variant="body1"
+                          gutterBottom
+                          maxRows={3}
+                          key={idx}
+                        >
+                          Concerned Faculty: {val}
+                        </Typography>
+                      ))}
+                    </>
+                  ))}
+                </>
+              )}
+
+              <hr />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
+  );
+};
+
+export default Forum;
